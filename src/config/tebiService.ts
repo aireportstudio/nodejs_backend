@@ -2,9 +2,9 @@ import AWS from "aws-sdk";
 
 // Configure Tebi S3
 const s3 = new AWS.S3({
-    endpoint: 'https://your-tebi-endpoint.io', // replace with your Tebi endpoint
-    accessKeyId: 'YOUR_ACCESS_KEY',            // from Tebi dashboard
-    secretAccessKey: 'YOUR_SECRET_KEY',        // from Tebi dashboard
+    endpoint: 'https://s3.tebi.io', // replace with your Tebi endpoint
+    accessKeyId: process.env.TEBI_KEY,            // from Tebi dashboard
+    secretAccessKey: process.env.TEBI_SECRETKEY,        // from Tebi dashboard
     s3ForcePathStyle: true,
 });
 
@@ -28,18 +28,18 @@ export const uploadFileToTebi = async (fileName: string, fileBuffer: Buffer) => 
 
 // services/tebiService.ts
 export const deleteFileFromTebi = async (fileUrl: string) => {
-  try {
-    // Extract Key from URL
-    const url = new URL(fileUrl);
-    const key = url.pathname.slice(1); // remove leading '/'
+    try {
+        // Extract Key from URL
+        const url = new URL(fileUrl);
+        const key = url.pathname.slice(1); // remove leading '/'
 
-    await s3.deleteObject({
-      Bucket: BUCKET_NAME,
-      Key: key,
-    }).promise();
+        await s3.deleteObject({
+            Bucket: BUCKET_NAME,
+            Key: key,
+        }).promise();
 
-    console.log("Old file deleted from Tebi:", key);
-  } catch (err) {
-    console.error("Error deleting file from Tebi:", err);
-  }
+        console.log("Old file deleted from Tebi:", key);
+    } catch (err) {
+        console.error("Error deleting file from Tebi:", err);
+    }
 };
