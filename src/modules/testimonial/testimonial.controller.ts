@@ -2,14 +2,21 @@ import { Request, Response } from "express";
 import * as testimonialService from "./testimonial.service";
 import { ok, created, badRequest } from "../../utils/response";
 import redis from "../../config/redis";
+import { deleteFileFromTebi, uploadFileToTebi } from "../../config/tebiService";
 
+// Create testimonial
 export const createTestimonialController = async (req: Request, res: Response) => {
   try {
     const data = { ...req.body };
-    if (req.file) data.image = req.file.filename;
+
+    if (req.file) {
+      const tebiUrl = await uploadFileToTebi(req.file.originalname, req.file.buffer);
+      data.image = tebiUrl;
+    }
+
     const testimonial = await testimonialService.createTestimonial(data);
 
-    // Invalidate cache after creating
+    // Invalidate cache
     await redis.del("testimonials:admin");
     await redis.del("testimonials:frontend");
 
@@ -19,12 +26,27 @@ export const createTestimonialController = async (req: Request, res: Response) =
   }
 };
 
+// Update testimonial
 export const updateTestimonialController = async (req: Request, res: Response) => {
   const id = Number(req.body.id);
   if (!id) return badRequest(res, "Testimonial ID is required");
+
   try {
     const data = { ...req.body };
-    if (req.file) data.image = req.file.filename;
+
+    // Get existing testimonial
+    const existingTestimonial = await testimonialService.getTestimonialById(id);
+    if (!existingTestimonial) return badRequest(res, "Testimonial not found");
+
+    if (req.file) {
+      // Delete old image from Tebi
+      if (existingTestimonial.image) await deleteFileFromTebi(existingTestimonial.image);
+
+      // Upload new image
+      const tebiUrl = await uploadFileToTebi(req.file.originalname, req.file.buffer);
+      data.image = tebiUrl;
+    }
+
     const testimonial = await testimonialService.updateTestimonial(id, data);
 
     // Invalidate cache

@@ -1,40 +1,39 @@
 import multer, { FileFilterCallback } from "multer";
-import path from "path";
 import { Request, Response, NextFunction } from "express";
 import { badRequest } from "../utils/response";
 
-// Storage config for blog images
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/blogs"); // make sure this folder exists
+// Memory storage for Tebi upload
+const storage = multer.memoryStorage();
+
+// Image upload middleware (blogs & testimonials)
+export const uploadImage = multer({
+  storage,
+  fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+    const allowedTypes = /jpeg|jpg|png|webp/;
+    const ext = file.originalname.split('.').pop()?.toLowerCase();
+    if (ext && allowedTypes.test(ext)) cb(null, true);
+    else cb(new Error("Only image files allowed: jpeg, jpg, png, webp"));
   },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const name = file.fieldname + "-" + Date.now() + ext;
-    cb(null, name);
-  },
+  limits: { fileSize: 1 * 1024 * 1024 }, // 1MB max for images
 });
 
-// File filter
-const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
-  const allowedTypes = /jpeg|jpg|png/;
-  const ext = path.extname(file.originalname).toLowerCase();
-  if (allowedTypes.test(ext)) {
-    cb(null, true);
-  } else {
-    cb(new Error("File type not allowed"));
-  }
-};
+// Video upload middleware (DemoVideos)
+export const uploadVideo = multer({
+  storage,
+  fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+    const allowedTypes = /mp4|mov|avi|mkv|webm/;
+    const ext = file.originalname.split('.').pop()?.toLowerCase();
+    if (ext && allowedTypes.test(ext)) cb(null, true);
+    else cb(new Error("Only video files allowed: mp4, mov, avi, mkv, webm"));
+  },
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB max for videos
+});
 
-// Limits
-const limits = { fileSize: 2 * 1024 * 1024 }; // 5MB
+// Generic wrapper for single file upload
+export const uploadSingle = (fieldName: string, type: "image" | "video" = "image") => {
+  const uploader = type === "video" ? uploadVideo.single(fieldName) : uploadImage.single(fieldName);
 
-const uploadMiddleware = multer({ storage, fileFilter, limits });
-
-// Single upload
-export const uploadSingle = (fieldName: string) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    const uploader = uploadMiddleware.single(fieldName);
     uploader(req, res, function (err) {
       if (err instanceof multer.MulterError) return badRequest(res, err.message);
       else if (err) return badRequest(res, (err as Error).message);

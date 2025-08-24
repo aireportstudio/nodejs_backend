@@ -2,16 +2,23 @@ import { Request, Response } from "express";
 import * as blogService from "./blog.service";
 import { ok, created, badRequest } from "../../utils/response";
 import redis from "../../config/redis";
+import { deleteFileFromTebi, uploadFileToTebi } from "../../config/tebiService";
 
 // Admin + public create
 
 export const createBlogController = async (req: Request, res: Response) => {
   try {
     const data = { ...req.body };
-    if (req.file) data.image = req.file.filename;
+
+    if (req.file) {
+      // Upload to Tebi and store URL in DB
+      const tebiUrl = await uploadFileToTebi(req.file.originalname, req.file.buffer);
+      data.image = tebiUrl;
+    }
+
     const blog = await blogService.createBlog(data);
 
-    // Invalidate cache after creating
+    // Invalidate cache
     await redis.del("blogs:admin");
     await redis.del("blogs:frontend");
 
@@ -24,9 +31,25 @@ export const createBlogController = async (req: Request, res: Response) => {
 export const updateBlogController = async (req: Request, res: Response) => {
   const id = Number(req.body.id);
   if (!id) return badRequest(res, "Blog ID is required");
+
   try {
     const data = { ...req.body };
-    if (req.file) data.image = req.file.filename;
+
+    // Fetch existing blog to get old image URL
+    const existingBlog = await blogService.getBlogById(id);
+    if (!existingBlog) return badRequest(res, "Blog not found");
+
+    if (req.file) {
+      // Delete old image from Tebi
+      if (existingBlog.image) {
+        await deleteFileFromTebi(existingBlog.image);
+      }
+
+      // Upload new image to Tebi
+      const tebiUrl = await uploadFileToTebi(req.file.originalname, req.file.buffer);
+      data.image = tebiUrl;
+    }
+
     const blog = await blogService.updateBlog(id, data);
 
     // Invalidate cache
@@ -61,7 +84,7 @@ export const deleteBlogController = async (req: Request, res: Response) => {
 export const getAllBlogsController = async (req: Request, res: Response) => {
   try {
     // Check cache first
-    const cache:any = await redis.get("blogs:admin");
+    const cache: any = await redis.get("blogs:admin");
     if (cache) {
       return ok(res, JSON.parse(cache), "Blogs fetched from cache");
     }
@@ -82,7 +105,7 @@ export const getAllBlogsController = async (req: Request, res: Response) => {
 
 export const getAllBlogsFrontendController = async (req: Request, res: Response) => {
   try {
-    const cache:any = await redis.get("blogs:frontend");
+    const cache: any = await redis.get("blogs:frontend");
     if (cache) {
       return ok(res, JSON.parse(cache), "Frontend blogs fetched from cache");
     }

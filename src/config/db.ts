@@ -30,4 +30,13 @@ export async function ensureConnected() {
   }
 }
 
+// ✅ One-time connection check + log
+(async () => {
+  try {
+    await prisma.$connect();
+    console.log("✅ Database connected successfully!");
+  } catch (err) {
+    console.error("❌ Database connection failed:", err);
+  }
+})();
 export default prisma;

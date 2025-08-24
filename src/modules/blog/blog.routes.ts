@@ -8,8 +8,8 @@ import * as blogController from "./blog.controller";
 const router = Router();
 
 // Admin APIs
-router.post("/admin/create", authMiddleware, uploadSingle("image"), validate(createBlogSchema), blogController.createBlogController);
-router.post("/admin/update", authMiddleware, uploadSingle("image"), validate(updateBlogSchema), blogController.updateBlogController);
+router.post("/admin/create", authMiddleware, uploadSingle("image", "image"), validate(createBlogSchema), blogController.createBlogController);
+router.post("/admin/update", authMiddleware, uploadSingle("image", "image"), validate(updateBlogSchema), blogController.updateBlogController);
 router.post("/admin/delete", authMiddleware, blogController.deleteBlogController);
 router.post("/admin/list", authMiddleware, blogController.getAllBlogsController);
 

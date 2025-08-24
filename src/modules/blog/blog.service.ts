@@ -16,6 +16,11 @@ export const getAllBlogs = async () => {
   return await prisma.blog.findMany({ orderBy: { createdAt: "desc" } });
 };
 
+// Get a single blog by ID
+export const getBlogById = async (id: number) => {
+  return await prisma.blog.findUnique({ where: { id } });
+};
+
 // Public frontend blogs (only active)
 export const getAllBlogsForFrontend = async () => {
   return await prisma.blog.findMany({

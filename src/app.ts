@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
 
-app.use("/api", routes);
+app.use("/", routes);
 
 
 app.get('/', (_, res) => res.json({ "server": "Started successfully" }));

@@ -16,6 +16,11 @@ export const getAllTestimonials = async () => {
   return await prisma.testimonial.findMany({ orderBy: { createdAt: "desc" } });
 };
 
+// Get a single testimonial by ID
+export const getTestimonialById = async (id: number) => {
+  return await prisma.testimonial.findUnique({ where: { id } });
+};
+
 // Public frontend (active only)
 export const getAllTestimonialsForFrontend = async () => {
   return await prisma.testimonial.findMany({

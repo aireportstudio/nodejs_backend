@@ -11,7 +11,7 @@ const router = Router();
 router.post(
     "/admin/create",
     authMiddleware,
-    uploadSingle("file"),
+    uploadSingle("file", "video"),
     validate(createDemoVideoSchema),
     demoVideoController.createDemoVideoController
 );
@@ -19,7 +19,7 @@ router.post(
 router.post(
     "/admin/update",
     authMiddleware,
-    uploadSingle("file"),
+    uploadSingle("file", "video"),
     validate(updateDemoVideoSchema),
     demoVideoController.updateDemoVideoController
 );
