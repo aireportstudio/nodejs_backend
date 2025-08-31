@@ -6,6 +6,7 @@ import faqRoutes from "./modules/faq/faq.routes";
 import socialRoutes from "./modules/social/social.routes";
 import demoVideoRoutes from "./modules/demoVideo/demoVideo.routes";
 import contactRoutes from "./modules/contact/contact.routes";
+import authRoutes from "./modules/Auth/auth.route";
 
 const router = Router();
 
@@ -16,5 +17,5 @@ router.use("/faq", faqRoutes);
 router.use("/social", socialRoutes);
 router.use("/demoVideo", demoVideoRoutes);
 router.use("/contact", contactRoutes);
-
+router.use("/auth", authRoutes);
 export default router;
