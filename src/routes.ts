@@ -6,7 +6,7 @@ import faqRoutes from "./modules/faq/faq.routes";
 import socialRoutes from "./modules/social/social.routes";
 import demoVideoRoutes from "./modules/demoVideo/demoVideo.routes";
 import contactRoutes from "./modules/contact/contact.routes";
-import authRoutes from "./modules/Auth/auth.route";
+import authRoutes from "./modules/routes/auth";
 
 const router = Router();
 

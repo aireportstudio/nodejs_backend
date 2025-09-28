@@ -14,7 +14,7 @@ export const uploadImage = multer({
     if (ext && allowedTypes.test(ext)) cb(null, true);
     else cb(new Error("Only image files allowed: jpeg, jpg, png, webp"));
   },
-  limits: { fileSize: 1 * 1024 * 1024 }, // 1MB max for images
+  limits: { fileSize: 5 * 1024 * 1024 }, // 1MB max for images
 });
 
 // Video upload middleware (DemoVideos)

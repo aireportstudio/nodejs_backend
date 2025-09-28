@@ -8,9 +8,10 @@ const app = express();
 
 app.use(helmet());
 app.use(cors());
-app.use(express.json());
+app.use(express.json()) // <--- Important for JSON body
+app.use(express.urlencoded({ extended: true }))
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
-
+// server.ts / app.ts (where you create the express app)
 
 app.use("/", routes);
 

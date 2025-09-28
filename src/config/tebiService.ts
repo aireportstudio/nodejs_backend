@@ -1,45 +1,45 @@
 import AWS from "aws-sdk";
 
-// Configure Tebi S3
 const s3 = new AWS.S3({
-    endpoint: 'https://s3.tebi.io', // replace with your Tebi endpoint
-    accessKeyId: process.env.TEBI_KEY,            // from Tebi dashboard
-    secretAccessKey: process.env.TEBI_SECRETKEY,        // from Tebi dashboard
-    s3ForcePathStyle: true,
+  endpoint: process.env.TEBI_ENDPOINT, // e.g. https://s3.tebi.io
+  accessKeyId: process.env.TEBI_ACCESS_KEY,
+  secretAccessKey: process.env.TEBI_SECRET_KEY,
+  s3ForcePathStyle: true,
+  signatureVersion: "v4",
 });
 
-const BUCKET_NAME = 'your-bucket-name';
-
 export const uploadFileToTebi = async (fileName: string, fileBuffer: Buffer) => {
-    const params = {
-        Bucket: BUCKET_NAME,
-        Key: `${Date.now()}-${fileName}`, // unique name
-        Body: fileBuffer,
-    };
+  const params = {
+    Bucket: process.env.TEBI_BUCKET!,  // ✅ bucket name, not endpoint
+    Key: `${Date.now()}-${fileName}`,
+    Body: fileBuffer,
+    ACL: "public-read",
+    ContentType: fileName.endsWith(".json") ? "application/json" : "text/html",
+  };
 
-    try {
-        const result = await s3.upload(params).promise();
-        return result.Location; // URL of uploaded file
-    } catch (err) {
-        console.error("Tebi upload error:", err);
-        throw err;
-    }
+  try {
+    const result = await s3.upload(params).promise();
+    return result.Location;
+  } catch (err) {
+    console.error("Tebi upload error:", err);
+    throw err;
+  }
 };
 
-// services/tebiService.ts
 export const deleteFileFromTebi = async (fileUrl: string) => {
-    try {
-        // Extract Key from URL
-        const url = new URL(fileUrl);
-        const key = url.pathname.slice(1); // remove leading '/'
+  try {
+    const url = new URL(fileUrl);
+    const key = url.pathname.slice(1);
 
-        await s3.deleteObject({
-            Bucket: BUCKET_NAME,
-            Key: key,
-        }).promise();
+    await s3
+      .deleteObject({
+        Bucket: process.env.TEBI_BUCKET!,  // ✅ fixed
+        Key: key,
+      })
+      .promise();
 
-        console.log("Old file deleted from Tebi:", key);
-    } catch (err) {
-        console.error("Error deleting file from Tebi:", err);
-    }
+    console.log("Old file deleted from Tebi:", key);
+  } catch (err) {
+    console.error("Error deleting file from Tebi:", err);
+  }
 };

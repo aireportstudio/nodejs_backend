@@ -1,11 +1,31 @@
 -- CreateTable
+CREATE TABLE "public"."User" (
+    "id" SERIAL NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "public"."Blog" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
+    "description" TEXT,
     "content" TEXT NOT NULL,
     "image" TEXT,
+    "author" TEXT,
+    "category" TEXT,
+    "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "publishedDate" TIMESTAMP(3),
+    "readTime" INTEGER,
+    "featured" BOOLEAN NOT NULL DEFAULT false,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "seo" JSONB,
+    "faqs" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -97,6 +117,9 @@ CREATE TABLE "public"."Contact" (
 
     CONSTRAINT "Contact_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Blog_slug_key" ON "public"."Blog"("slug");

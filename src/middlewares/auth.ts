@@ -1,17 +1,23 @@
+// middlewares/auth.ts
 import { Request, Response, NextFunction } from "express";
-import { invalidToken, tokenExpired, unauthorized } from "../utils/response";
-import { verifyToken } from "../utils/jwt";
+import jwt from "jsonwebtoken";
+
+const APP_JWT_SECRET = process.env.APP_JWT_SECRET as string;
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return unauthorized(res, "Authorization header missing");
+    console.log("req.header", req.headers.authorization);
+    
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ success: false, message: "No token" });
+  }
 
-    const token = authHeader.split(" ")[1]; // Bearer <token>
-    if (!token) return unauthorized(res, "Token missing");
-
-    const decoded = verifyToken(token);
-    if (!decoded) return invalidToken(res);
-
-    (req as any).user = decoded; // attach decoded payload to req.user
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, APP_JWT_SECRET);
+    (req as any).user = decoded;
     next();
+  } catch (err) {
+    return res.status(401).json({ success: false, message: "Invalid Token" });
+  }
 };

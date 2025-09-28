@@ -1,19 +1,36 @@
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret";
-const JWT_EXPIRES_IN = "1d"; // adjust as needed
+const APP_JWT_SECRET = process.env.APP_JWT_SECRET as string;
 
-// Generate JWT
-export const generateToken = (payload: object) =>
-  jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+if (!APP_JWT_SECRET) {
+  throw new Error("APP_JWT_SECRET is not defined in environment variables");
+}
 
-// Verify JWT
+// Helper to verify token and return payload
 export const verifyToken = (token: string) => {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(token, APP_JWT_SECRET);
   } catch (err) {
     return null;
   }
+};
+
+// Express middleware for protected routes
+import { Request, Response, NextFunction } from "express";
+
+export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ success: false, message: "No token provided" });
+  }
+
+  const token = authHeader.split(" ")[1]; // Expect "Bearer <token>"
+  const decoded = verifyToken(token);
+
+  if (!decoded) {
+    return res.status(401).json({ success: false, message: "Invalid or expired token" });
+  }
+
+  (req as any).user = decoded; // attach decoded user payload
+  next();
 };

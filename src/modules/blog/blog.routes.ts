@@ -8,10 +8,22 @@ import * as blogController from "./blog.controller";
 const router = Router();
 
 // Admin APIs
-router.post("/admin/create", authMiddleware, uploadSingle("image", "image"), validate(createBlogSchema), blogController.createBlogController);
-router.post("/admin/update", authMiddleware, uploadSingle("image", "image"), validate(updateBlogSchema), blogController.updateBlogController);
-router.post("/admin/delete", authMiddleware, blogController.deleteBlogController);
-router.post("/admin/list", authMiddleware, blogController.getAllBlogsController);
+router.post(
+  "/admin/create",
+  uploadSingle("image", "image"),
+  validate(createBlogSchema),
+  blogController.createBlogController
+);
+
+router.post(
+  "/admin/update",
+  uploadSingle("image", "image"),
+  validate(updateBlogSchema),
+  blogController.updateBlogController
+);
+
+router.post("/admin/delete",  blogController.deleteBlogController);
+router.post("/admin/list",  blogController.getAllBlogsController);
 
 // Public APIs
 router.post("/list", blogController.getAllBlogsFrontendController);
