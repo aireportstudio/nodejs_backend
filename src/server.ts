@@ -6,17 +6,9 @@ import { createKeepAlive } from "./keepAlive";
 dotenv.config();
 const PORT = process.env.PORT || 4000;
 
-// Initialize keepalive utility
-const keepAlive = createKeepAlive({
+createKeepAlive({
   healthUrl: `${process.env.SERVER_URL}/health`,
-  idleMinutes: 14,
-  checkEveryMinutes: 1,
-});
-
-// Middleware: track user activity
-app.use((req: Request, res: Response, next: NextFunction) => {
-  keepAlive.recordActivity();
-  next();
+  pingIntervalMinutes: 10, // ping every 5 minutes
 });
 
 // Health route

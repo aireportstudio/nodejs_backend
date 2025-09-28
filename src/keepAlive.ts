@@ -1,36 +1,24 @@
+// keepAlive.ts
 import axios from "axios";
 
 type KeepAliveOptions = {
   healthUrl: string;
-  idleMinutes?: number;
-  checkEveryMinutes?: number;
+  pingIntervalMinutes?: number; // how often to ping self
 };
 
-export function createKeepAlive({ 
-  healthUrl, 
-  idleMinutes = 12, 
-  checkEveryMinutes = 1 
+export function createKeepAlive({
+  healthUrl,
+  pingIntervalMinutes = 5, // default every 5 minutes
 }: KeepAliveOptions) {
-  let lastActivity = Date.now();
+  console.log(`🟢 KeepAlive initialized. Pinging ${healthUrl} every ${pingIntervalMinutes} min.`);
 
-  // Call this on every real request
-  function recordActivity() {
-    lastActivity = Date.now();
-  }
-
-  // Periodically check for idle
+  // Ping self periodically
   setInterval(async () => {
-    const idleTime = Date.now() - lastActivity;
-
-    if (idleTime > idleMinutes * 60 * 1000) {
-      try {
-        await axios.get(healthUrl);
-        console.log("🔄 Pinged app after idle period.");
-      } catch (err: any) {
-        console.error("❌ Ping failed:", err.message);
-      }
+    try {
+      await axios.get(healthUrl);
+      console.log("🔄 Pinged self to stay awake");
+    } catch (err: any) {
+      console.error("❌ Ping failed:", err.message);
     }
-  }, checkEveryMinutes * 60 * 1000);
-
-  return { recordActivity };
+  }, pingIntervalMinutes * 60 * 1000); // convert minutes to ms
 }
