@@ -9,6 +9,7 @@
     "postinstall": "prisma generate && npm run build",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:migrate:prod": "prisma migrate deploy",
     "prisma:push": "prisma db push",
     "seed": "ts-node seed.ts"
   },
